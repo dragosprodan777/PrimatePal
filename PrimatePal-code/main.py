@@ -1,7 +1,8 @@
 from discord.ext import commands
 import discord
+import os
 
-BOT_TOKEN = "MTEyODgxODY3MzEyNjIyMzk2Mw.Gfg8DN.fEp3U3JZ_EOY54v0SxtmS89ZTxdjkKPyBnq1fY"
+BOT_TOKEN = os.environ.get("PRIMATE_PAL_TKN")
 MIERCURI_ID = 334750929637343232
 BOT_COMMANDS_ID = 787686148889509918
 
