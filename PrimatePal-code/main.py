@@ -12,5 +12,17 @@ bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 @bot.event
 async def on_ready():
     print("I am ready!")
+    channel = bot.get_channel(BOT_COMMANDS_ID)
+    await channel.send("Your Pal is back online!")
+
+
+    @bot.command()
+    async def hello(ctx):
+        await ctx.send("Hello back, dear friend!")
+
+    @bot.command()
+    async def hej(ctx):
+        await ctx.send("Hi!")
+
 
 bot.run(BOT_TOKEN)
