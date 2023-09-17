@@ -2,15 +2,15 @@ from discord.ext import commands
 COG_COMMAND_COOLDOWN = commands.cooldown(1, 5, commands.BucketType.user)
 
 
-class Cog(commands.Cog, name="Hello"):
+class Cog(commands.Cog, name="Hi"):
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command()
     @COG_COMMAND_COOLDOWN
-    async def hello(self, ctx):
-        print("Received 'hello' command in cog.py")
-        await ctx.send("Hello, dear friend!")
+    async def hi(self, ctx):
+        print("Received 'hi' command in cog.py")
+        await ctx.send("Hi!")
 
 
 async def setup(bot):

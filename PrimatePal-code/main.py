@@ -1,9 +1,7 @@
 from discord.ext import commands
-import tracemalloc
 import discord
 import os
 
-tracemalloc.start()
 BOT_TOKEN = os.environ.get("PRIMATE_PAL_TKN")
 MIERCURI_ID = 334750929637343232
 BOT_COMMANDS_ID = 787686148889509918
