@@ -16,7 +16,6 @@ async def on_ready():
     print("I am ready!")
     channel = bot.get_channel(BOT_COMMANDS_ID)
     await channel.send("Your Pal is back online!")
-
     for folder in os.listdir("modules"):
         if os.path.exists(os.path.join("modules", folder, "cog.py")):
             try:
