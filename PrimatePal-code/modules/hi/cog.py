@@ -9,7 +9,7 @@ class Cog(commands.Cog, name="Hi"):
     @commands.command()
     @COG_COMMAND_COOLDOWN
     async def hi(self, ctx):
-        print("Received 'hi' command in cog.py")
+        print("Received 'hi' command in hi/cog.py")
         await ctx.send("Hi!")
 
 

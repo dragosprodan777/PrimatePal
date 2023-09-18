@@ -9,7 +9,7 @@ class Cog(commands.Cog, name="Hello"):
     @commands.command()
     @COG_COMMAND_COOLDOWN
     async def hello(self, ctx):
-        print("Received 'hello' command in cog.py")
+        print("Received 'hello' command in hello/cog.py")
         await ctx.send("Hello, dear friend!")
 
 
