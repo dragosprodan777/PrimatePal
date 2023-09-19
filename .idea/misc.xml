@@ -5,5 +5,5 @@
     <option name="pathToExecutable" value="/opt/homebrew/bin/black" />
     <option name="sdkUUID" value="c9f1f7f9-6a23-4f47-b508-9eb6a60e9997" />
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_18" default="true" project-jdk-name="Python 3.11 (PrimatePal)" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_18" default="true" project-jdk-name="Python 3.11" project-jdk-type="Python SDK" />
 </project>

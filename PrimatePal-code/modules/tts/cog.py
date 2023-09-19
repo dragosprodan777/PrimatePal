@@ -3,6 +3,7 @@ from discord.ext import commands
 from gtts import gTTS
 import asyncio
 
+
 COG_COMMAND_COOLDOWN = commands.cooldown(1, 5, commands.BucketType.user)
 
 
@@ -14,6 +15,11 @@ class Cog(commands.Cog, name="sayBack"):
     @COG_COMMAND_COOLDOWN
     async def tts(self, ctx, *, text_to_say):
         print(f"Received 'sayBack' command in tts/cog.py: {text_to_say}")
+
+        # Check if the text exceeds the character limit
+        if len(text_to_say) > 150:
+            await ctx.send("The text exceeds the character limit of 150.")
+            return
 
         # Check if the user is in a voice channel
         if ctx.author.voice is None:
@@ -29,11 +35,13 @@ class Cog(commands.Cog, name="sayBack"):
         # Convert text to speech
         tts = gTTS(text=text_to_say, lang='en')
 
-        # Save the TTS as an audio file
-        tts.save('text_to_speech.mp3')
+        mp3_path = "modules/tts/text_to_speech.mp3"
+
+        # Save the TTS as an audio file with the constant filename
+        tts.save(mp3_path)
 
         # Play the audio file in the voice channel
-        voice_client.play(discord.FFmpegPCMAudio('text_to_speech.mp3'))
+        voice_client.play(discord.FFmpegPCMAudio(mp3_path))
 
         # Wait for the audio to finish playing
         while voice_client.is_playing():
@@ -44,7 +52,7 @@ class Cog(commands.Cog, name="sayBack"):
 
         # Delete the temporary audio file
         import os
-        os.remove('text_to_speech.mp3')
+        os.remove(mp3_path)
 
 
 async def setup(bot):
