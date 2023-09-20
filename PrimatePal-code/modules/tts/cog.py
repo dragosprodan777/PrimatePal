@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from gtts import gTTS
 import asyncio
-
+discord.opus.load_opus("/opt/homebrew/Cellar/opus/1.4/lib/libopus.dylib")
 
 COG_COMMAND_COOLDOWN = commands.cooldown(1, 5, commands.BucketType.user)
 
@@ -14,7 +14,7 @@ class Cog(commands.Cog, name="sayBack"):
     @commands.command()
     @COG_COMMAND_COOLDOWN
     async def tts(self, ctx, *, text_to_say):
-        print(f"Received 'sayBack' command in tts/cog.py: {text_to_say}")
+        print(f"Received 'tts' command in tts/cog.py: {text_to_say}")
 
         # Check if the text exceeds the character limit
         if len(text_to_say) > 150:
