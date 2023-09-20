@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from gtts import gTTS
 import asyncio
+import os
 discord.opus.load_opus("/opt/homebrew/Cellar/opus/1.4/lib/libopus.dylib")
 
 COG_COMMAND_COOLDOWN = commands.cooldown(1, 5, commands.BucketType.user)
@@ -51,7 +52,6 @@ class Cog(commands.Cog, name="sayBack"):
         await voice_client.disconnect()
 
         # Delete the temporary audio file
-        import os
         os.remove(mp3_path)
 
 
