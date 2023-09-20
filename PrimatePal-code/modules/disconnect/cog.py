@@ -11,7 +11,7 @@ class Cog(commands.Cog, name="Leave"):
 
         # Check if the bot is connected to a voice channel in the same guild as the command
         if ctx.voice_client:
-            # Disconnect from the voice channel
+            # Disconnect from the voice channelcd
             await ctx.voice_client.disconnect()
             await ctx.send("I have left the voice channel.")
         else:
