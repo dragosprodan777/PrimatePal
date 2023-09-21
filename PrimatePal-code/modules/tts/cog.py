@@ -1,18 +1,22 @@
-import discord
-from discord.ext import commands
+import disnake
+from disnake.ext import commands
 from gtts import gTTS
 import asyncio
 import os
-discord.opus.load_opus("/opt/homebrew/Cellar/opus/1.4/lib/libopus.dylib")
+
+disnake.opus.load_opus("/opt/homebrew/Cellar/opus/1.4/lib/libopus.dylib")
 
 COG_COMMAND_COOLDOWN = commands.cooldown(1, 5, commands.BucketType.user)
 
 
-class Cog(commands.Cog, name="sayBack"):
+class Cog(commands.Cog, name="tts"):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
+    @commands.slash_command(
+        name="tts",
+        description="Text to speech"
+    )
     @COG_COMMAND_COOLDOWN
     async def tts(self, ctx, *, text_to_say):
         print(f"Received 'tts' command in tts/cog.py: {text_to_say}")
@@ -33,8 +37,8 @@ class Cog(commands.Cog, name="sayBack"):
         # Join the voice channel
         voice_client = await voice_channel.connect()
 
-        # Convert text to speech
-        tts = gTTS(text=text_to_say, lang='en')
+        # Convert text to speech and select language for the TTS module
+        tts = gTTS(text=text_to_say, lang='ro')
 
         mp3_path = "modules/tts/text_to_speech.mp3"
 
@@ -42,7 +46,7 @@ class Cog(commands.Cog, name="sayBack"):
         tts.save(mp3_path)
 
         # Play the audio file in the voice channel
-        voice_client.play(discord.FFmpegPCMAudio(mp3_path))
+        voice_client.play(disnake.FFmpegPCMAudio(mp3_path))
 
         # Wait for the audio to finish playing
         while voice_client.is_playing():
@@ -55,5 +59,5 @@ class Cog(commands.Cog, name="sayBack"):
         os.remove(mp3_path)
 
 
-async def setup(bot):
-    await bot.add_cog(Cog(bot))
+def setup(bot):
+    bot.add_cog(Cog(bot))

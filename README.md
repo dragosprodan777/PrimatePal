@@ -9,7 +9,7 @@ Primate Pal Bot is a versatile Discord bot that offers a range of commands and f
 ## Summary of Features
 
 - **Greet and Socialize:** Primate Pal Bot includes friendly greeting commands to make your server feel welcoming. Say hello, hi, or engage in conversations with your bot.
-- **Text-to-Speech (TTS):** Enjoy text-to-speech functionality to have the bot speak any text you provide in voice channels.
+- **Text-to-Speech (TTS):** Enjoy text-to-speech functionality to have the bot speak any text you provide in voice channels. The language can be changed via specific module.
 - **Voice Channel Management:** Easily move the bot in and out of voice channels using the leave command.
 
 ## Modularity with Cogs

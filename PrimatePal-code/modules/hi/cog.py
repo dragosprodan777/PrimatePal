@@ -1,17 +1,18 @@
-from discord.ext import commands
-COG_COMMAND_COOLDOWN = commands.cooldown(1, 5, commands.BucketType.user)
+from disnake.ext import commands
 
 
 class Cog(commands.Cog, name="Hi"):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
-    @COG_COMMAND_COOLDOWN
-    async def hi(self, ctx):
+    @commands.slash_command(
+        name="hi",
+        description="Say hi to the bot"
+    )
+    async def hello(self, ctx):
         print("Received 'hi' command in hi/cog.py")
-        await ctx.send("Hi!")
+        await ctx.send("Hi")
 
 
-async def setup(bot):
-    await bot.add_cog(Cog(bot))
+def setup(bot):
+    bot.add_cog(Cog(bot))

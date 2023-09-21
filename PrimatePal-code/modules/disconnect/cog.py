@@ -1,22 +1,32 @@
-from discord.ext import commands
+from disnake.ext import commands
 
 
 class Cog(commands.Cog, name="Leave"):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
+    @commands.slash_command(
+        name="leave",
+        description="Disconnect the bot from the voice channel"
+    )
     async def leave(self, ctx):
         print("Received 'leave' command in disconnect/cog.py")
 
-        # Check if the bot is connected to a voice channel in the same guild as the command
-        if ctx.voice_client:
-            # Disconnect from the voice channelcd
-            await ctx.voice_client.disconnect()
-            await ctx.send("I have left the voice channel.")
+        # Check if the user who issued the command is in a voice channel
+        if ctx.author.voice:
+            voice_state = ctx.author.voice
+            voice_channel = voice_state.channel
+
+            # Check if the bot is in the same voice channel as the user
+            if ctx.guild.voice_client and ctx.guild.voice_client.channel == voice_channel:
+                # Disconnect the bot from the voice channel
+                await ctx.guild.voice_client.disconnect()
+                await ctx.send("I have left the voice channel.")
+            else:
+                await ctx.send("I'm not in the same voice channel as you.")
         else:
-            await ctx.send("I'm not in a voice channel.")
+            await ctx.send("You are not in a voice channel.")
 
 
-async def setup(bot):
-    await bot.add_cog(Cog(bot))
+def setup(bot):
+    bot.add_cog(Cog(bot))

@@ -1,2 +1,3 @@
 discord~=2.3.2
 gTTS~=2.3.2
+disnake~=2.9.0
