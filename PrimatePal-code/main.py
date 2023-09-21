@@ -2,7 +2,7 @@ import disnake
 from disnake.ext import commands
 import os
 
-BOT_TOKEN = os.environ.get("PRIMATE_PAL_TKN")
+BOT_TOKEN = os.environ.get("PRIMATE_PAL_TOKEN")
 MIERCURI_ID = 334750929637343232
 BOT_COMMANDS_ID = 787686148889509918
 
@@ -20,7 +20,7 @@ def load_cogs():
                 print(f"Failed to load extension '{cog_path}': {e}")
 
 
-# Load cogs before running the bot
+# Load ALL cogs before running the bot
 load_cogs()
 
 
@@ -29,7 +29,5 @@ async def on_ready():
     print("I am ready!")
     channel = bot.get_channel(BOT_COMMANDS_ID)
     await channel.send("Your Pal is back online!")
-
-bot.run(BOT_TOKEN)
 
 bot.run(BOT_TOKEN)
