@@ -2,3 +2,4 @@ discord
 gTTS
 disnake
 spotipy
+ffmpeg

@@ -21,7 +21,7 @@ class Cog(commands.Cog, name="play"):
 
     @commands.slash_command(
         name="play",
-        description="Play a track from Spotify - Name or Link"
+        description="Play a track from Spotify (Name or Link)"
     )
     @COG_COMMAND_COOLDOWN
     async def play(self, ctx, *, query):
