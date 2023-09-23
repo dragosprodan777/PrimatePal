@@ -23,9 +23,9 @@ class Cog(commands.Cog, name="chatgpt"):
         try:
             # Send the user's question to ChatGPT
             response = openai.Completion.create(
-                engine="gpt-3.5-turbo",  # You can choose a different engine if desired
+                model="text-davinci-003",  # You can choose a different engine if desired
                 prompt=question,
-                max_tokens=25,  # Adjust the response length as needed
+                max_tokens=100,  # Adjust the response length as needed
                 n=1,
                 stop=None,
                 temperature=1
