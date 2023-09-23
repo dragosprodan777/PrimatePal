@@ -18,11 +18,11 @@ class Cog(commands.Cog, name="tts"):
         description="Text to speech"
     )
     @COG_COMMAND_COOLDOWN
-    async def tts(self, ctx, *, text_to_say):
-        print(f"Received 'tts' command in tts/cog.py: {text_to_say}")
+    async def tts(self, ctx, *, text):
+        print(f"Received 'tts' command in tts/cog.py: {text}")
 
         # Check if the text exceeds the character limit
-        if len(text_to_say) > 150:
+        if len(text) > 150:
             await ctx.send("The text exceeds the character limit of 150.")
             return
 
@@ -38,7 +38,7 @@ class Cog(commands.Cog, name="tts"):
         voice_client = await voice_channel.connect()
 
         # Convert text to speech and select language for the TTS module
-        tts = gTTS(text=text_to_say, lang='ro')
+        tts = gTTS(text=text, lang='ro')
 
         mp3_path = "modules/tts/text_to_speech.mp3"
 

@@ -24,9 +24,9 @@ class Cog(commands.Cog, name="play"):
         description="Play a track from Spotify (Name or Link)"
     )
     @COG_COMMAND_COOLDOWN
-    async def play(self, ctx, *, query):
+    async def play(self, ctx, *, song):
         # Search for a track on Spotify
-        results = self.spotify.search(q=query, limit=1, type='track')
+        results = self.spotify.search(q=song, limit=1, type='track')
 
         if not results['tracks']['items']:
             await ctx.send("No tracks found.")

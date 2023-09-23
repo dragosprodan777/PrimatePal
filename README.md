@@ -27,7 +27,13 @@ To get started with Primate Pal Bot, follow these steps:
 1. Clone or download this repository to your local machine.
 2. Install the required dependencies listed in `requirements.txt` using `pip install -r requirements.txt`.
 3. Set up your Discord bot and obtain a bot token.
-4. Save your bot secret and spotify secret tokens locally in the OS and add your bot token as follows:
+4. Save your:
+   1. Discord Bot secret token
+   2. Spotify API secret token
+   3. OpenAI API secret token
+
+locally in the OS and add your bot token as follows:
+
 
     ```
     BOT_TOKEN=your_bot_token_here

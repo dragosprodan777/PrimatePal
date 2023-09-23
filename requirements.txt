@@ -3,3 +3,4 @@ gTTS
 disnake
 spotipy
 ffmpeg
+openai
