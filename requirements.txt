@@ -4,3 +4,4 @@ disnake
 spotipy
 ffmpeg
 openai
+wavelink

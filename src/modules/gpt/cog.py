@@ -30,8 +30,8 @@ class Cog(commands.Cog, name="chatgpt"):
                 stop=None,
                 temperature=1
             )
-
-            # Extract the generated response from ChatGPT
+            print("Received 'chatgpt' command in gpt/cog.py")
+        # Extract the generated response from ChatGPT
             answer = response.choices[0].text.strip()
 
             # Send the response back to the user

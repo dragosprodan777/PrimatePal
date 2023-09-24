@@ -10,7 +10,7 @@ class Cog(commands.Cog, name="Leave"):
         description="Disconnect the bot from the voice channel"
     )
     async def leave(self, ctx):
-        print("Received 'leave' command in disconnect/cog.py")
+        print("Received 'leave' command in leave/cog.py")
 
         # Check if the user who issued the command is in a voice channel
         if ctx.author.voice:
