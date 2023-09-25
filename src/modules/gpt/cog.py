@@ -7,7 +7,7 @@ OPENAI_API_KEY = os.environ.get("OPENAI_TOKEN")
 # Initialize the OpenAI API client
 openai.api_key = OPENAI_API_KEY
 
-COG_COMMAND_COOLDOWN = commands.cooldown(1, 5, commands.BucketType.user)
+COG_COMMAND_COOLDOWN = commands.cooldown(1, 20, commands.BucketType.user)
 
 
 class Cog(commands.Cog, name="chatgpt"):
