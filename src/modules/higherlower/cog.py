@@ -3,7 +3,7 @@ from disnake.ext import commands
 import random
 import asyncio
 
-COG_COMMAND_COOLDOWN = commands.cooldown(1, 5, commands.BucketType.user)
+COG_COMMAND_COOLDOWN = commands.cooldown(1, 3, commands.BucketType.user)
 
 
 class HigherLowerGame:
@@ -68,7 +68,7 @@ class Cog(commands.Cog, name="HigherLower"):
                                f" Type `/higher` or `/lower`.")
             else:
                 self.game.wrong_guesses += 1  # Increment wrong guesses
-                await ctx.send(f"Wrooooong! The next number is {new_number}!. - Score -> Correct:"
+                await ctx.send(f"Wrooooong! The next number is {new_number}! Score -> Correct:"
                                f" {self.game.correct_guesses}, Wrong: {self.game.wrong_guesses},"
                                f" Type `/higher` or `/lower`.")
             self.game.last_activity_time = asyncio.get_event_loop().time()  # Update activity time
@@ -90,7 +90,7 @@ class Cog(commands.Cog, name="HigherLower"):
                                f" Type `/higher` or `/lower`.")
             else:
                 self.game.wrong_guesses += 1
-                await ctx.send(f"Wrooooong! The next number is {new_number}!. - Score -> Correct:"
+                await ctx.send(f"Wrooooong! The next number is {new_number}! Score -> Correct:"
                                f" {self.game.correct_guesses}, Wrong: {self.game.wrong_guesses},"
                                f" Type `/higher` or `/lower`.")
         self.game.last_activity_time = asyncio.get_event_loop().time()  # Update activity time
