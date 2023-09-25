@@ -1,4 +1,4 @@
-# This idea was my frien's, Andrei. Thank you andrei :thumbs_up:
+# This idea was my friend's, Andrei. Thank you Andrei :thumbs_up:
 from disnake.ext import commands
 import random
 import asyncio
