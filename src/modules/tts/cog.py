@@ -47,10 +47,10 @@ class Cog(commands.Cog, name="tts"):
 
         # Play the audio file in the voice channel
         voice_client.play(disnake.FFmpegPCMAudio(mp3_path))
+        await ctx.send("I am speaking!")
 
         # Wait for the audio to finish playing
         while voice_client.is_playing():
-            await ctx.send("I am speaking!")
             await asyncio.sleep(1)
 
         # Disconnect from the voice channel
