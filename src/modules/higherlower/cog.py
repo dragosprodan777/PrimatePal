@@ -1,7 +1,8 @@
-# This idea was my friend's, Andrei. Thank you Andrei :thumbs_up:
+# This idea was my friend's, Andrei. Thank you, Andrei :thumbs_up:
 from disnake.ext import commands
 import random
 import asyncio
+import sqlite3
 
 COG_COMMAND_COOLDOWN = commands.cooldown(1, 3, commands.BucketType.user)
 
@@ -11,10 +12,58 @@ class HigherLowerGame:
         self.running_game = True
         self.current_number = None
         self.end_game = False
-        self.correct_guesses = 0
-        self.wrong_guesses = 0
+        self.inactivity_message = "Game ended due to inactivity."
         self.last_activity_time = None  # Keep track of the last activity time
         self.no_game_started_text = "No game in progress. Start a game with `/higherlower`."
+
+        self.conn = sqlite3.connect("modules/higherlower/higherlower.db")  # Create a table for scores in the module
+        self.create_scores_table()
+
+    def create_scores_table(self):
+        cursor = self.conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS user_scores (
+                username TEXT PRIMARY KEY,
+                correct_guesses INTEGER,
+                wrong_guesses INTEGER
+            )
+        ''')
+        self.conn.commit()
+
+    def add_correct_guess(self, username):
+        cursor = self.conn.cursor()
+        cursor.execute('''
+            INSERT OR REPLACE INTO user_scores (username, correct_guesses, wrong_guesses)
+            VALUES (?, (SELECT correct_guesses FROM user_scores WHERE username = ?) + 1,
+             (SELECT wrong_guesses FROM user_scores WHERE username = ?))
+        ''', (username, username, username))
+        self.conn.commit()
+
+    def add_wrong_guess(self, username):
+        cursor = self.conn.cursor()
+        cursor.execute('''
+            INSERT OR REPLACE INTO user_scores (username, correct_guesses, wrong_guesses)
+            VALUES (?, (SELECT correct_guesses FROM user_scores WHERE username = ?),
+             (SELECT wrong_guesses FROM user_scores WHERE username = ?) + 1)
+        ''', (username, username, username))
+        self.conn.commit()
+
+    def load_user_scores(self, username):
+        cursor = self.conn.cursor()
+        cursor.execute('SELECT correct_guesses, wrong_guesses FROM user_scores WHERE username = ?', (username,))
+        row = cursor.fetchone()
+        if row:
+            correct_guesses, wrong_guesses = row
+        else:
+            # If user doesn't exist, create a new row with 0 correct and wrong guesses
+            cursor.execute('INSERT INTO user_scores (username, correct_guesses, wrong_guesses) VALUES (?, ?, ?)',
+                           (username, 0, 0))
+            self.conn.commit()
+            correct_guesses, wrong_guesses = 0, 0
+        return correct_guesses, wrong_guesses
+
+    def close_connection(self):
+        self.conn.close()
 
     def start_game(self):
         self.current_number = random.randint(0, 100)
@@ -44,6 +93,9 @@ class Cog(commands.Cog, name="HigherLower"):
     )
     @COG_COMMAND_COOLDOWN
     async def higherlower(self, ctx):
+        username = ctx.author.name
+        self.game = HigherLowerGame()
+        print(username, "started a game of  HigherLower.")
         if not self.game.end_game:
             self.game.start_game()
             await ctx.send(f"Game started! Current number: {self.game.current_number}. Type `/higher` or `/lower`."
@@ -61,19 +113,27 @@ class Cog(commands.Cog, name="HigherLower"):
     async def higher(self, ctx):
         if self.game.end_game:
             new_number = self.game.next_number()
+
+            correct_guesses, wrong_guesses = self.game.load_user_scores(ctx.author.name)
+            self.game.correct_guesses = correct_guesses
+            self.game.wrong_guesses = wrong_guesses
+
             if new_number > self.game.current_number:
-                self.game.correct_guesses += 1
+                self.game.add_correct_guess(ctx.author.name)
+                correct_guesses, _ = self.game.load_user_scores(ctx.author.name)
                 await ctx.send(f"Correct! The next number is {new_number}. Score -> Correct:"
-                               f" {self.game.correct_guesses}, Wrong: {self.game.wrong_guesses},"
+                               f" {correct_guesses}, Wrong: {self.game.wrong_guesses},"
                                f" Type `/higher` or `/lower`.")
             else:
-                self.game.wrong_guesses += 1  # Increment wrong guesses
+                self.game.add_wrong_guess(ctx.author.name)
+                _, wrong_guesses = self.game.load_user_scores(ctx.author.name)
                 await ctx.send(f"Wrooooong! The next number is {new_number}! Score -> Correct:"
-                               f" {self.game.correct_guesses}, Wrong: {self.game.wrong_guesses},"
+                               f" {self.game.correct_guesses}, Wrong: {wrong_guesses},"
                                f" Type `/higher` or `/lower`.")
+
             self.game.last_activity_time = asyncio.get_event_loop().time()  # Update activity time
             if self.game.check_activity_timeout():
-                await ctx.send("Game ended due to inactivity.")
+                await ctx.send(self.game.inactivity_message)
 
     @commands.slash_command(
         name="lower",
@@ -83,19 +143,27 @@ class Cog(commands.Cog, name="HigherLower"):
     async def lower(self, ctx):
         if self.game.end_game:
             new_number = self.game.next_number()
+
+            correct_guesses, wrong_guesses = self.game.load_user_scores(ctx.author.name)
+            self.game.correct_guesses = correct_guesses
+            self.game.wrong_guesses = wrong_guesses
+
             if new_number < self.game.current_number:
-                self.game.correct_guesses += 1
+                self.game.add_correct_guess(ctx.author.name)
+                correct_guesses, _ = self.game.load_user_scores(ctx.author.name)
                 await ctx.send(f"Correct! The next number is {new_number}. Score -> Correct:"
-                               f" {self.game.correct_guesses}, Wrong: {self.game.wrong_guesses},"
+                               f" {correct_guesses}, Wrong: {self.game.wrong_guesses},"
                                f" Type `/higher` or `/lower`.")
             else:
-                self.game.wrong_guesses += 1
+                self.game.add_wrong_guess(ctx.author.name)
+                _, wrong_guesses = self.game.load_user_scores(ctx.author.name)
                 await ctx.send(f"Wrooooong! The next number is {new_number}! Score -> Correct:"
-                               f" {self.game.correct_guesses}, Wrong: {self.game.wrong_guesses},"
+                               f" {self.game.correct_guesses}, Wrong: {wrong_guesses},"
                                f" Type `/higher` or `/lower`.")
-        self.game.last_activity_time = asyncio.get_event_loop().time()  # Update activity time
-        if self.game.check_activity_timeout():
-            await ctx.send("Game ended due to inactivity.")
+
+            self.game.last_activity_time = asyncio.get_event_loop().time()  # Update activity time
+            if self.game.check_activity_timeout():
+                await ctx.send(self.game.inactivity_message)
 
     @commands.slash_command(
         name="quitgame",
