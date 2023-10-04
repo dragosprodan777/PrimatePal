@@ -68,7 +68,7 @@ class HigherLowerGame:
     def start_game(self):
         self.current_number = random.randint(0, 100)
         self.end_game = True
-        self.last_activity_time = asyncio.get_event_loop().time()  # Record the start time
+        self.last_activity_time = asyncio.get_event_loop().time()  # Record the start time for IDLE timer
 
     @staticmethod
     def next_number():
