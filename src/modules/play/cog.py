@@ -25,7 +25,7 @@ class Cog(commands.Cog, name="play"):
     )
     @COG_COMMAND_COOLDOWN
     async def play(self, ctx, *, song):
-        print("Received 'play' command in play/cog.py")
+        print(f"Received 'play' command in play/cog.py: '{song}' from: {ctx.author.name}")
         # Search for a track on Spotify
         results = self.spotify.search(q=song, limit=1, type='track')
 

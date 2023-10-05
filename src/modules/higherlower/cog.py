@@ -93,9 +93,9 @@ class Cog(commands.Cog, name="HigherLower"):
     )
     @COG_COMMAND_COOLDOWN
     async def higherlower(self, ctx):
-        username = ctx.author.name
         self.game = HigherLowerGame()
-        print(username, "started a game of  HigherLower.")
+        print(f"Received 'higherlower' command in higherlower/cog.py: from {ctx.author.name}")
+
         if not self.game.end_game:
             self.game.start_game()
             await ctx.send(f"Game started! Current number: {self.game.current_number}. Type `/higher` or `/lower`."
@@ -114,6 +114,10 @@ class Cog(commands.Cog, name="HigherLower"):
         if self.game.end_game:
             new_number = self.game.next_number()
 
+            print(f"Received 'higher' command in higherlower/cog.py: evaluate"
+                  f" {new_number} higher than {self.game.current_number}"
+                  f" from: {ctx.author.name}")
+
             correct_guesses, wrong_guesses = self.game.load_user_scores(ctx.author.name)
             self.game.correct_guesses = correct_guesses
             self.game.wrong_guesses = wrong_guesses
@@ -123,6 +127,7 @@ class Cog(commands.Cog, name="HigherLower"):
                 await ctx.send(f"Hmmm, looks like a draw! The next number is {new_number}. Score -> Correct:"
                                f" {self.game.correct_guesses}, Wrong: {self.game.wrong_guesses},"
                                f" Type `/higher` or `/lower`.")
+                print("Result -- DRAW")
             else:
                 if new_number > self.game.current_number:
                     self.game.add_correct_guess(ctx.author.name)
@@ -130,12 +135,14 @@ class Cog(commands.Cog, name="HigherLower"):
                     await ctx.send(f"Correct! The next number is {new_number}. Score -> Correct:"
                                    f" {correct_guesses}, Wrong: {self.game.wrong_guesses},"
                                    f" Type `/higher` or `/lower`.")
+                    print("Result -- CORRECT")
                 else:
                     self.game.add_wrong_guess(ctx.author.name)
                     _, wrong_guesses = self.game.load_user_scores(ctx.author.name)
                     await ctx.send(f"Wrooooong! The next number is {new_number}! Score -> Correct:"
                                    f" {self.game.correct_guesses}, Wrong: {wrong_guesses},"
                                    f" Type `/higher` or `/lower`.")
+                    print("Result -- WRONG")
 
                 self.game.current_number = new_number  # Update the current number for the next iteration
                 self.game.last_activity_time = asyncio.get_event_loop().time()  # Update activity time
@@ -151,6 +158,10 @@ class Cog(commands.Cog, name="HigherLower"):
         if self.game.end_game:
             new_number = self.game.next_number()
 
+            print(f"Received 'lower' command in higherlower/cog.py: evaluate"
+                  f" {new_number} lower than {self.game.current_number}"
+                  f" from: {ctx.author.name}")
+
             correct_guesses, wrong_guesses = self.game.load_user_scores(ctx.author.name)
             self.game.correct_guesses = correct_guesses
             self.game.wrong_guesses = wrong_guesses
@@ -159,6 +170,7 @@ class Cog(commands.Cog, name="HigherLower"):
                 await ctx.send(f"Hmm, looks like a draw! The next number is {new_number}. Score -> Correct:"
                                f" {self.game.correct_guesses}, Wrong: {self.game.wrong_guesses},"
                                f" Type `/higher` or `/lower`.")
+                print("Result -- DRAW")
             else:
                 if new_number < self.game.current_number:
                     self.game.add_correct_guess(ctx.author.name)
@@ -166,12 +178,14 @@ class Cog(commands.Cog, name="HigherLower"):
                     await ctx.send(f"Correct! The next number is {new_number}. Score -> Correct:"
                                    f" {correct_guesses}, Wrong: {self.game.wrong_guesses},"
                                    f" Type `/higher` or `/lower`.")
+                    print("Result -- CORRECT")
                 else:
                     self.game.add_wrong_guess(ctx.author.name)
                     _, wrong_guesses = self.game.load_user_scores(ctx.author.name)
                     await ctx.send(f"Wrooooong! The next number is {new_number}! Score -> Correct:"
                                    f" {self.game.correct_guesses}, Wrong: {wrong_guesses},"
                                    f" Type `/higher` or `/lower`.")
+                    print("Result -- WRONG")
 
                 self.game.current_number = new_number  # Update the current number for the next iteration
                 self.game.last_activity_time = asyncio.get_event_loop().time()  # Update activity time

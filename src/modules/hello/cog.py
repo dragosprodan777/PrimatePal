@@ -10,7 +10,7 @@ class Cog(commands.Cog, name="Hello"):
         description="Say hello to the bot"
     )
     async def hello(self, ctx):
-        print("Received 'hello' command in hello/cog.py")
+        print("Received 'hello' command in hello/cog.py from", ctx.author.name)
         await ctx.send("Hello, dear friend!")
 
 

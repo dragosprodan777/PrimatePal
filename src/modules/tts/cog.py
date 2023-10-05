@@ -19,7 +19,7 @@ class Cog(commands.Cog, name="tts"):
     )
     @COG_COMMAND_COOLDOWN
     async def tts(self, ctx, *, text):
-        print(f"Received 'tts' command in tts/cog.py: {text}")
+        print(f"Received 'tts' command in tts/cog.py: '{text}' from: {ctx.author.name}")
 
         # Check if the text exceeds the character limit
         if len(text) > 150:
