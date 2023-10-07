@@ -210,7 +210,7 @@ class Cog(commands.Cog, name="HigherLower"):
         if not self.game.end_game:
             self.game.start_game()
             view = HigherLowerView(self.game)
-            self.prompt_message = await ctx.send(f"Game started! Current number: {self.game.current_number}", view=view)
+            await ctx.send(f"Game started! Current number: {self.game.current_number}", view=view)
         else:
             await ctx.send(f"You are already in a game. Current number:"
                            f" {self.game.current_number}.")
