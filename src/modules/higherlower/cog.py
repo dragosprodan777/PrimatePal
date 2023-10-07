@@ -94,10 +94,10 @@ class HigherLowerGame:
                   f" {new_number} higher than {self.current_number}"
                   f" from: {interaction.author.name}")
 
-            correct_guesses, wrong_guesses = self.load_user_scores(interaction.author.name)
+            correct_guesses, wrong_guesses = self.load_user_scores(interaction.author.id)
 
             if new_number == self.current_number:
-                correct_guesses, _ = self.load_user_scores(interaction.author.name)
+                correct_guesses, _ = self.load_user_scores(interaction.author.id)
                 message = (f"Hmmm, looks like a draw! The next number is {new_number}."
                            f" Score: Correct: {correct_guesses}, Wrong: {wrong_guesses}")
 
@@ -105,16 +105,16 @@ class HigherLowerGame:
                 print("Result -- DRAW")
             else:
                 if new_number > self.current_number:
-                    self.add_correct_guess(interaction.author.name)
-                    correct_guesses, _ = self.load_user_scores(interaction.author.name)
+                    self.add_correct_guess(interaction.author.id)
+                    correct_guesses, _ = self.load_user_scores(interaction.author.id)
                     message = (f"Correct! The next number is {new_number}."
                                f" Score: Correct: {correct_guesses}, Wrong: {wrong_guesses}")
 
                     await self.update_prompt(interaction, message)
                     print("Result -- CORRECT")
                 else:
-                    self.add_wrong_guess(interaction.author.name)
-                    _, wrong_guesses = self.load_user_scores(interaction.author.name)
+                    self.add_wrong_guess(interaction.author.id)
+                    _, wrong_guesses = self.load_user_scores(interaction.author.id)
                     message = (f"Wrooooong! The next number is {new_number}!"
                                f" Score: Correct: {correct_guesses}, Wrong: {wrong_guesses}")
                     await self.update_prompt(interaction, message)
@@ -133,26 +133,26 @@ class HigherLowerGame:
                   f" {new_number} lower than {self.current_number}"
                   f" from: {interaction.author.name}")
 
-            correct_guesses, wrong_guesses = self.load_user_scores(interaction.author.name)
+            correct_guesses, wrong_guesses = self.load_user_scores(interaction.author.id)
 
             if new_number == self.current_number:
-                correct_guesses, _ = self.load_user_scores(interaction.author.name)
+                correct_guesses, _ = self.load_user_scores(interaction.author.id)
                 message = (f"Hmmm, looks like a draw! The next number is {new_number}."
                            f" Score: Correct: {correct_guesses}, Wrong: {wrong_guesses}")
 
                 await self.update_prompt(interaction, message)
             else:
                 if new_number < self.current_number:
-                    self.add_correct_guess(interaction.author.name)
-                    correct_guesses, _ = self.load_user_scores(interaction.author.name)
+                    self.add_correct_guess(interaction.author.id)
+                    correct_guesses, _ = self.load_user_scores(interaction.author.id)
                     message = (f"Correct! The next number is {new_number}."
                                f" Score: Correct: {correct_guesses}, Wrong: {wrong_guesses}")
 
                     await self.update_prompt(interaction, message)
                     print("Result -- CORRECT")
                 else:
-                    self.add_wrong_guess(interaction.author.name)
-                    _, wrong_guesses = self.load_user_scores(interaction.author.name)
+                    self.add_wrong_guess(interaction.author.id)
+                    _, wrong_guesses = self.load_user_scores(interaction.author.id)
                     message = (f"Wrooooong! The next number is {new_number}!"
                                f" Score: Correct: {correct_guesses}, Wrong: {wrong_guesses}")
                     await self.update_prompt(interaction, message)
