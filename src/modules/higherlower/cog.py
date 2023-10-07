@@ -79,11 +79,13 @@ class HigherLowerGame:
     def next_number():
         return random.randint(0, 100)
 
-    def check_activity_timeout(self):
-        # Check if the game has been inactive for 2 minutes
-        if self.game_is_running is True and asyncio.get_event_loop().time() - self.last_activity_time > 60:
+    async def check_activity_timeout(self):
+        current_time = asyncio.get_event_loop().time()
+        if self.game_is_running is True and current_time - self.last_activity_time > 10:
+            print("Game ended due to inactivity.")
             self.game_is_running = False
             return True  # Game ended due to inactivity
+        print("Game is still active.")
         return False
 
     async def higher(self, interaction):
@@ -122,8 +124,10 @@ class HigherLowerGame:
 
                 self.current_number = new_number  # Update the current number for the next iteration
                 self.last_activity_time = asyncio.get_event_loop().time()  # Update activity time
-                if self.check_activity_timeout():
-                    await interaction.send(self.inactivity_message)
+                if await self.check_activity_timeout():
+                    await self.update_prompt(interaction, self.inactivity_message)
+                    view = interaction.message.view
+                    await view.disable_buttons(interaction)
 
     async def lower(self, interaction):
         if self.game_is_running:
@@ -160,8 +164,10 @@ class HigherLowerGame:
 
                 self.current_number = new_number  # Update the current number for the next iteration
                 self.last_activity_time = asyncio.get_event_loop().time()  # Update activity time
-                if self.check_activity_timeout():
-                    await interaction.send(self.inactivity_message)
+                if await self.check_activity_timeout():
+                    await self.update_prompt(interaction, self.inactivity_message)
+                    view = interaction.message.view
+                    await view.disable_buttons(interaction)
 
     async def quitgame(self, interaction):
         if self.game_is_running is True:
@@ -193,11 +199,11 @@ class HigherLowerView(View):
     async def quitgame_call(self, button_signature, interaction):
         await self.game.quitgame(interaction)
         self.game.game_is_running = False
-        self.disable_buttons()
+        await self.disable_buttons()
         await interaction.edit_original_message(view=self)  # Edit the original message to remove all buttons
         _ = button_signature
 
-    def disable_buttons(self):
+    async def disable_buttons(self):
         buttons_to_remove = []
         for child in self.children:
             if isinstance(child, Button):
