@@ -28,41 +28,41 @@ class HigherLowerGame:
         cursor = self.conn.cursor()
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS user_scores (
-                username TEXT PRIMARY KEY,
+                discord_id TEXT PRIMARY KEY,
                 correct_guesses INTEGER,
                 wrong_guesses INTEGER
             )
         ''')
         self.conn.commit()
 
-    def add_correct_guess(self, username):
+    def add_correct_guess(self, discord_id):
         cursor = self.conn.cursor()
         cursor.execute('''
-            INSERT OR REPLACE INTO user_scores (username, correct_guesses, wrong_guesses)
-            VALUES (?, (SELECT correct_guesses FROM user_scores WHERE username = ?) + 1,
-             (SELECT wrong_guesses FROM user_scores WHERE username = ?))
-        ''', (username, username, username))
+            INSERT OR REPLACE INTO user_scores (discord_id, correct_guesses, wrong_guesses)
+            VALUES (?, (SELECT correct_guesses FROM user_scores WHERE discord_id = ?) + 1,
+             (SELECT wrong_guesses FROM user_scores WHERE discord_id = ?))
+        ''', (discord_id, discord_id, discord_id))
         self.conn.commit()
 
-    def add_wrong_guess(self, username):
+    def add_wrong_guess(self, discord_id):
         cursor = self.conn.cursor()
         cursor.execute('''
-            INSERT OR REPLACE INTO user_scores (username, correct_guesses, wrong_guesses)
-            VALUES (?, (SELECT correct_guesses FROM user_scores WHERE username = ?),
-             (SELECT wrong_guesses FROM user_scores WHERE username = ?) + 1)
-        ''', (username, username, username))
+            INSERT OR REPLACE INTO user_scores (discord_id, correct_guesses, wrong_guesses)
+            VALUES (?, (SELECT correct_guesses FROM user_scores WHERE discord_id = ?),
+             (SELECT wrong_guesses FROM user_scores WHERE discord_id = ?) + 1)
+        ''', (discord_id, discord_id, discord_id))
         self.conn.commit()
 
-    def load_user_scores(self, username):
+    def load_user_scores(self, discord_id):
         cursor = self.conn.cursor()
-        cursor.execute('SELECT correct_guesses, wrong_guesses FROM user_scores WHERE username = ?', (username,))
+        cursor.execute('SELECT correct_guesses, wrong_guesses FROM user_scores WHERE discord_id = ?', (discord_id,))
         row = cursor.fetchone()
         if row:
             correct_guesses, wrong_guesses = row
         else:
             # If user doesn't exist, create a new row with 0 correct and wrong guesses
-            cursor.execute('INSERT INTO user_scores (username, correct_guesses, wrong_guesses) VALUES (?, ?, ?)',
-                           (username, 0, 0))
+            cursor.execute('INSERT INTO user_scores (discord_id, correct_guesses, wrong_guesses) VALUES (?, ?, ?)',
+                           (discord_id, 0, 0))
             self.conn.commit()
             correct_guesses, wrong_guesses = 0, 0
         return correct_guesses, wrong_guesses
