@@ -1,10 +1,10 @@
 import disnake
+import datetime
 from disnake.ext import commands
 import os
 
 BOT_TOKEN = os.environ.get("PRIMATE_PAL_TOKEN")
-MIERCURI_ID = 334750929637343232
-BOT_COMMANDS_ID = 787686148889509918
+ONLINE_CHECK_PRIMATE_PAL_SV = 1160152031361777684
 
 bot = commands.Bot(command_prefix='!', intents=disnake.Intents.all())
 
@@ -27,7 +27,8 @@ load_cogs()
 @bot.event
 async def on_ready():
     print("I am ready!")
-    channel = bot.get_channel(BOT_COMMANDS_ID)
-    await channel.send("Your Pal is back online!")
+    channel = bot.get_channel(ONLINE_CHECK_PRIMATE_PAL_SV)
+    now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    await channel.send(f"Your Pal is back online at {now}!")
 
 bot.run(BOT_TOKEN)
