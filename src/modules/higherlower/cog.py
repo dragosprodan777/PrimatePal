@@ -1,5 +1,6 @@
-# This idea was my friend's, Andrei. Thank you, Andrei :thumbs_up:
 from disnake.ext import commands
+from disnake.ui import View, button
+from disnake import ButtonStyle
 import random
 import asyncio
 import sqlite3
@@ -15,9 +16,14 @@ class HigherLowerGame:
         self.inactivity_message = "Game ended due to inactivity."
         self.last_activity_time = None  # Keep track of the last activity time
         self.no_game_started_text = "No game in progress. Start a game with `/higherlower`."
+        self.prompt_message = None
 
         self.conn = sqlite3.connect("modules/higherlower/higherlower.db")  # Create a table for scores in the module
         self.create_scores_table()
+
+    @staticmethod
+    async def update_prompt(interaction, new_content):
+        await interaction.response.edit_message(content=new_content)
 
     def create_scores_table(self):
         cursor = self.conn.cursor()
@@ -81,6 +87,112 @@ class HigherLowerGame:
             return True  # Game ended due to inactivity
         return False
 
+    async def higher(self, interaction):
+        if self.end_game:
+            new_number = self.next_number()
+
+            print(f"Pressed 'Higher' button in higherlower/cog.py: evaluate"
+                  f" {new_number} higher than {self.current_number}"
+                  f" from: {interaction.author.name}")
+
+            correct_guesses, wrong_guesses = self.load_user_scores(interaction.author.name)
+
+            if new_number == self.current_number:
+                correct_guesses, _ = self.load_user_scores(interaction.author.name)
+                message = (f"Hmmm, looks like a draw! The next number is {new_number}."
+                           f" Score: Correct: {correct_guesses}, Wrong: {wrong_guesses}")
+
+                await self.update_prompt(interaction, message)
+                print("Result -- DRAW")
+            else:
+                if new_number > self.current_number:
+                    self.add_correct_guess(interaction.author.name)
+                    correct_guesses, _ = self.load_user_scores(interaction.author.name)
+                    message = (f"Correct! The next number is {new_number}."
+                               f" Score: Correct: {correct_guesses}, Wrong: {wrong_guesses}")
+
+                    await self.update_prompt(interaction, message)
+                    print("Result -- CORRECT")
+                else:
+                    self.add_wrong_guess(interaction.author.name)
+                    _, wrong_guesses = self.load_user_scores(interaction.author.name)
+                    message = (f"Wrooooong! The next number is {new_number}!"
+                               f" Score: Correct: {correct_guesses}, Wrong: {wrong_guesses}")
+                    await self.update_prompt(interaction, message)
+                    print("Result -- WRONG")
+
+                self.current_number = new_number  # Update the current number for the next iteration
+                self.last_activity_time = asyncio.get_event_loop().time()  # Update activity time
+                if self.check_activity_timeout():
+                    await interaction.send(self.inactivity_message)
+
+    async def lower(self, interaction):
+        if self.end_game:
+            new_number = self.next_number()
+
+            print(f"Pressed 'Lower' button in higherlower/cog.py: evaluate"
+                  f" {new_number} lower than {self.current_number}"
+                  f" from: {interaction.author.name}")
+
+            correct_guesses, wrong_guesses = self.load_user_scores(interaction.author.name)
+
+            if new_number == self.current_number:
+                correct_guesses, _ = self.load_user_scores(interaction.author.name)
+                message = (f"Hmmm, looks like a draw! The next number is {new_number}."
+                           f" Score: Correct: {correct_guesses}, Wrong: {wrong_guesses}")
+
+                await self.update_prompt(interaction, message)
+            else:
+                if new_number < self.current_number:
+                    self.add_correct_guess(interaction.author.name)
+                    correct_guesses, _ = self.load_user_scores(interaction.author.name)
+                    message = (f"Correct! The next number is {new_number}."
+                               f" Score: Correct: {correct_guesses}, Wrong: {wrong_guesses}")
+
+                    await self.update_prompt(interaction, message)
+                    print("Result -- CORRECT")
+                else:
+                    self.add_wrong_guess(interaction.author.name)
+                    _, wrong_guesses = self.load_user_scores(interaction.author.name)
+                    message = (f"Wrooooong! The next number is {new_number}!"
+                               f" Score: Correct: {correct_guesses}, Wrong: {wrong_guesses}")
+                    await self.update_prompt(interaction, message)
+                    print("Result -- WRONG")
+
+                self.current_number = new_number  # Update the current number for the next iteration
+                self.last_activity_time = asyncio.get_event_loop().time()  # Update activity time
+                if self.check_activity_timeout():
+                    await interaction.send(self.inactivity_message)
+
+    async def quitgame(self, interaction):
+        if self.end_game and self.running_game is True:
+            self.end_game = True
+            print("Pressed 'Quit Game' button in higherlower/cog.py")
+            await interaction.send("You ended the game.")
+        else:
+            await interaction.send(self.no_game_started_text)
+
+
+class HigherLowerView(View):
+    def __init__(self, game):
+        super().__init__()
+        self.game = game
+
+    @button(label="Higher", style=ButtonStyle.green, custom_id="higher")
+    async def higher_call(self, button_signature, interaction):
+        await self.game.higher(interaction)
+        _ = button_signature
+
+    @button(label="Lower", style=ButtonStyle.red, custom_id="lower")
+    async def lower_call(self, button_signature, interaction):
+        await self.game.lower(interaction)
+        _ = button_signature
+
+    @button(label="Quit Game", style=ButtonStyle.gray, custom_id="quitgame")
+    async def quitgame_call(self, button_signature,  interaction):
+        await self.game.quitgame(interaction)
+        _ = button_signature
+
 
 class Cog(commands.Cog, name="HigherLower"):
     def __init__(self, bot):
@@ -93,116 +205,15 @@ class Cog(commands.Cog, name="HigherLower"):
     )
     @COG_COMMAND_COOLDOWN
     async def higherlower(self, ctx):
-        self.game = HigherLowerGame()
-        print(f"Received 'higherlower' command in higherlower/cog.py: from {ctx.author.name}")
+        print(f"Received 'higherlower' command from {ctx.author.name}")
 
         if not self.game.end_game:
             self.game.start_game()
-            await ctx.send(f"Game started! Current number: {self.game.current_number}. Type `/higher` or `/lower`."
-                           f" You can also use `/quitgame` to end the game.")
+            view = HigherLowerView(self.game)
+            await ctx.send(f"Game started! Current number: {self.game.current_number}", view=view)
         else:
             await ctx.send(f"You are already in a game. Current number:"
-                           f" {self.game.current_number}. Type `/higher` or `/lower`."
-                           f" You can also use `/quitgame` to end the game.")
-
-    @commands.slash_command(
-        name="higher",
-        description="Guess that the next number will be higher"
-    )
-    @COG_COMMAND_COOLDOWN
-    async def higher(self, ctx):
-        if self.game.end_game:
-            new_number = self.game.next_number()
-
-            print(f"Received 'higher' command in higherlower/cog.py: evaluate"
-                  f" {new_number} higher than {self.game.current_number}"
-                  f" from: {ctx.author.name}")
-
-            correct_guesses, wrong_guesses = self.game.load_user_scores(ctx.author.name)
-            self.game.correct_guesses = correct_guesses
-            self.game.wrong_guesses = wrong_guesses
-
-            if new_number == self.game.current_number:
-                correct_guesses, _ = self.game.load_user_scores(ctx.author.name)
-                await ctx.send(f"Hmmm, looks like a draw! The next number is {new_number}. Score -> Correct:"
-                               f" {self.game.correct_guesses}, Wrong: {self.game.wrong_guesses},"
-                               f" Type `/higher` or `/lower`.")
-                print("Result -- DRAW")
-            else:
-                if new_number > self.game.current_number:
-                    self.game.add_correct_guess(ctx.author.name)
-                    correct_guesses, _ = self.game.load_user_scores(ctx.author.name)
-                    await ctx.send(f"Correct! The next number is {new_number}. Score -> Correct:"
-                                   f" {correct_guesses}, Wrong: {self.game.wrong_guesses},"
-                                   f" Type `/higher` or `/lower`.")
-                    print("Result -- CORRECT")
-                else:
-                    self.game.add_wrong_guess(ctx.author.name)
-                    _, wrong_guesses = self.game.load_user_scores(ctx.author.name)
-                    await ctx.send(f"Wrooooong! The next number is {new_number}! Score -> Correct:"
-                                   f" {self.game.correct_guesses}, Wrong: {wrong_guesses},"
-                                   f" Type `/higher` or `/lower`.")
-                    print("Result -- WRONG")
-
-                self.game.current_number = new_number  # Update the current number for the next iteration
-                self.game.last_activity_time = asyncio.get_event_loop().time()  # Update activity time
-                if self.game.check_activity_timeout():
-                    await ctx.send(self.game.inactivity_message)
-
-    @commands.slash_command(
-        name="lower",
-        description="Guess that the next number will be lower"
-    )
-    @COG_COMMAND_COOLDOWN
-    async def lower(self, ctx):
-        if self.game.end_game:
-            new_number = self.game.next_number()
-
-            print(f"Received 'lower' command in higherlower/cog.py: evaluate"
-                  f" {new_number} lower than {self.game.current_number}"
-                  f" from: {ctx.author.name}")
-
-            correct_guesses, wrong_guesses = self.game.load_user_scores(ctx.author.name)
-            self.game.correct_guesses = correct_guesses
-            self.game.wrong_guesses = wrong_guesses
-
-            if new_number == self.game.current_number:
-                await ctx.send(f"Hmm, looks like a draw! The next number is {new_number}. Score -> Correct:"
-                               f" {self.game.correct_guesses}, Wrong: {self.game.wrong_guesses},"
-                               f" Type `/higher` or `/lower`.")
-                print("Result -- DRAW")
-            else:
-                if new_number < self.game.current_number:
-                    self.game.add_correct_guess(ctx.author.name)
-                    correct_guesses, _ = self.game.load_user_scores(ctx.author.name)
-                    await ctx.send(f"Correct! The next number is {new_number}. Score -> Correct:"
-                                   f" {correct_guesses}, Wrong: {self.game.wrong_guesses},"
-                                   f" Type `/higher` or `/lower`.")
-                    print("Result -- CORRECT")
-                else:
-                    self.game.add_wrong_guess(ctx.author.name)
-                    _, wrong_guesses = self.game.load_user_scores(ctx.author.name)
-                    await ctx.send(f"Wrooooong! The next number is {new_number}! Score -> Correct:"
-                                   f" {self.game.correct_guesses}, Wrong: {wrong_guesses},"
-                                   f" Type `/higher` or `/lower`.")
-                    print("Result -- WRONG")
-
-                self.game.current_number = new_number  # Update the current number for the next iteration
-                self.game.last_activity_time = asyncio.get_event_loop().time()  # Update activity time
-                if self.game.check_activity_timeout():
-                    await ctx.send(self.game.inactivity_message)
-
-    @commands.slash_command(
-        name="quitgame",
-        description="Quit the current game"
-    )
-    @COG_COMMAND_COOLDOWN
-    async def quitgame(self, ctx):
-        if self.game.end_game and self.game.running_game is True:
-            self.game.end_game = True
-            await ctx.send("You ended the game.")
-        else:
-            await ctx.send(self.game.no_game_started_text)
+                           f" {self.game.current_number}.")
 
 
 def setup(bot):
