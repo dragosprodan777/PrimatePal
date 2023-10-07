@@ -16,9 +16,14 @@ class HigherLowerGame:
         self.inactivity_message = "Game ended due to inactivity."
         self.last_activity_time = None  # Keep track of the last activity time
         self.no_game_started_text = "No game in progress. Start a game with `/higherlower`."
+        self.prompt_message = None
 
         self.conn = sqlite3.connect("modules/higherlower/higherlower.db")  # Create a table for scores in the module
         self.create_scores_table()
+
+    @staticmethod
+    async def update_prompt(interaction, new_content):
+        await interaction.response.edit_message(content=new_content)
 
     def create_scores_table(self):
         cursor = self.conn.cursor()
@@ -94,21 +99,26 @@ class HigherLowerGame:
 
             if new_number == self.current_number:
                 correct_guesses, _ = self.load_user_scores(interaction.author.name)
-                await interaction.send(f"Hmmm, looks like a draw! The next number is {new_number}. Score -> Correct:"
-                                       f" {correct_guesses}, Wrong: {wrong_guesses},")
+                message = (f"Hmmm, looks like a draw! The next number is {new_number}."
+                           f" Score: Correct: {correct_guesses}, Wrong: {wrong_guesses}")
+
+                await self.update_prompt(interaction, message)
                 print("Result -- DRAW")
             else:
                 if new_number > self.current_number:
                     self.add_correct_guess(interaction.author.name)
                     correct_guesses, _ = self.load_user_scores(interaction.author.name)
-                    await interaction.send(f"Correct! The next number is {new_number}. Score -> Correct:"
-                                           f" {correct_guesses}, Wrong: {wrong_guesses},")
+                    message = (f"Correct! The next number is {new_number}."
+                               f" Score: Correct: {correct_guesses}, Wrong: {wrong_guesses}")
+
+                    await self.update_prompt(interaction, message)
                     print("Result -- CORRECT")
                 else:
                     self.add_wrong_guess(interaction.author.name)
                     _, wrong_guesses = self.load_user_scores(interaction.author.name)
-                    await interaction.send(f"Wrooooong! The next number is {new_number}! Score -> Correct:"
-                                           f" {correct_guesses}, Wrong: {wrong_guesses},")
+                    message = (f"Wrooooong! The next number is {new_number}!"
+                               f" Score: Correct: {correct_guesses}, Wrong: {wrong_guesses}")
+                    await self.update_prompt(interaction, message)
                     print("Result -- WRONG")
 
                 self.current_number = new_number  # Update the current number for the next iteration
@@ -127,21 +137,26 @@ class HigherLowerGame:
             correct_guesses, wrong_guesses = self.load_user_scores(interaction.author.name)
 
             if new_number == self.current_number:
-                await interaction.send(f"Hmm, looks like a draw! The next number is {new_number}. Score -> Correct:"
-                                       f" {correct_guesses}, Wrong: {wrong_guesses},")
-                print("Result -- DRAW")
+                correct_guesses, _ = self.load_user_scores(interaction.author.name)
+                message = (f"Hmmm, looks like a draw! The next number is {new_number}."
+                           f" Score: Correct: {correct_guesses}, Wrong: {wrong_guesses}")
+
+                await self.update_prompt(interaction, message)
             else:
                 if new_number < self.current_number:
                     self.add_correct_guess(interaction.author.name)
                     correct_guesses, _ = self.load_user_scores(interaction.author.name)
-                    await interaction.send(f"Correct! The next number is {new_number}. Score -> Correct:"
-                                           f" {correct_guesses}, Wrong: {wrong_guesses},")
+                    message = (f"Correct! The next number is {new_number}."
+                               f" Score: Correct: {correct_guesses}, Wrong: {wrong_guesses}")
+
+                    await self.update_prompt(interaction, message)
                     print("Result -- CORRECT")
                 else:
                     self.add_wrong_guess(interaction.author.name)
                     _, wrong_guesses = self.load_user_scores(interaction.author.name)
-                    await interaction.send(f"Wrooooong! The next number is {new_number}! Score -> Correct:"
-                                           f" {correct_guesses}, Wrong: {wrong_guesses},")
+                    message = (f"Wrooooong! The next number is {new_number}!"
+                               f" Score: Correct: {correct_guesses}, Wrong: {wrong_guesses}")
+                    await self.update_prompt(interaction, message)
                     print("Result -- WRONG")
 
                 self.current_number = new_number  # Update the current number for the next iteration
@@ -195,7 +210,7 @@ class Cog(commands.Cog, name="HigherLower"):
         if not self.game.end_game:
             self.game.start_game()
             view = HigherLowerView(self.game)
-            await ctx.send(f"Game started! Current number: {self.game.current_number}", view=view)
+            self.prompt_message = await ctx.send(f"Game started! Current number: {self.game.current_number}", view=view)
         else:
             await ctx.send(f"You are already in a game. Current number:"
                            f" {self.game.current_number}.")
