@@ -84,8 +84,9 @@ class HigherLowerGame:
         if self.game_is_running is True and current_time - self.last_activity_time > 10:
             print("Game ended due to inactivity.")
             self.game_is_running = False
+            print("Game is inactive.")
             return True  # Game ended due to inactivity
-        print("Game is still active.")
+
         return False
 
     async def higher(self, interaction):
