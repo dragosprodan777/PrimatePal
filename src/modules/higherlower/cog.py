@@ -1,5 +1,5 @@
 from disnake.ext import commands
-from disnake.ui import View, button
+from disnake.ui import View, Button, button
 from disnake import ButtonStyle
 import random
 import asyncio
@@ -10,9 +10,8 @@ COG_COMMAND_COOLDOWN = commands.cooldown(1, 2, commands.BucketType.user)
 
 class HigherLowerGame:
     def __init__(self):
-        self.running_game = True
         self.current_number = None
-        self.end_game = False
+        self.game_is_running = False
         self.inactivity_message = "Game ended due to inactivity."
         self.last_activity_time = None  # Keep track of the last activity time
         self.no_game_started_text = "No game in progress. Start a game with `/higherlower`."
@@ -73,7 +72,7 @@ class HigherLowerGame:
 
     def start_game(self):
         self.current_number = random.randint(0, 100)
-        self.end_game = True
+        self.game_is_running = True
         self.last_activity_time = asyncio.get_event_loop().time()  # Record the start time for IDLE timer
 
     @staticmethod
@@ -82,13 +81,13 @@ class HigherLowerGame:
 
     def check_activity_timeout(self):
         # Check if the game has been inactive for 2 minutes
-        if self.end_game and asyncio.get_event_loop().time() - self.last_activity_time > 60:  # End game if IDLE
-            self.end_game = False
+        if self.game_is_running is True and asyncio.get_event_loop().time() - self.last_activity_time > 60:
+            self.game_is_running = False
             return True  # Game ended due to inactivity
         return False
 
     async def higher(self, interaction):
-        if self.end_game:
+        if self.game_is_running:
             new_number = self.next_number()
 
             print(f"Pressed 'Higher' button in higherlower/cog.py: evaluate"
@@ -127,7 +126,7 @@ class HigherLowerGame:
                     await interaction.send(self.inactivity_message)
 
     async def lower(self, interaction):
-        if self.end_game:
+        if self.game_is_running:
             new_number = self.next_number()
 
             print(f"Pressed 'Lower' button in higherlower/cog.py: evaluate"
@@ -165,12 +164,14 @@ class HigherLowerGame:
                     await interaction.send(self.inactivity_message)
 
     async def quitgame(self, interaction):
-        if self.end_game and self.running_game is True:
-            self.end_game = True
+        if self.game_is_running is True:
+            self.game_is_running = False
             print("Pressed 'Quit Game' button in higherlower/cog.py")
-            await interaction.send("You ended the game.")
+            message = "You ended the game."
+            await self.update_prompt(interaction, message)
+            return True
         else:
-            await interaction.send(self.no_game_started_text)
+            return False
 
 
 class HigherLowerView(View):
@@ -189,9 +190,21 @@ class HigherLowerView(View):
         _ = button_signature
 
     @button(label="Quit Game", style=ButtonStyle.gray, custom_id="quitgame")
-    async def quitgame_call(self, button_signature,  interaction):
+    async def quitgame_call(self, button_signature, interaction):
         await self.game.quitgame(interaction)
+        self.game.game_is_running = False
+        self.disable_buttons()
+        await interaction.edit_original_message(view=self)  # Edit the original message to remove all buttons
         _ = button_signature
+
+    def disable_buttons(self):
+        buttons_to_remove = []
+        for child in self.children:
+            if isinstance(child, Button):
+                buttons_to_remove.append(child)
+
+        for btn in buttons_to_remove:
+            self.remove_item(btn)
 
 
 class Cog(commands.Cog, name="HigherLower"):
@@ -207,7 +220,7 @@ class Cog(commands.Cog, name="HigherLower"):
     async def higherlower(self, ctx):
         print(f"Received 'higherlower' command from {ctx.author.name}")
 
-        if not self.game.end_game:
+        if not self.game.game_is_running:
             self.game.start_game()
             view = HigherLowerView(self.game)
             await ctx.send(f"Game started! Current number: {self.game.current_number}", view=view)
