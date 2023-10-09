@@ -5,3 +5,4 @@ spotipy
 ffmpeg
 openai
 wavelink
+speedtest-cli
