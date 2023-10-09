@@ -173,7 +173,8 @@ class HigherLowerGame:
     async def quitgame(self, interaction):
         if self.game_is_running is True:
             self.game_is_running = False
-            print("Pressed 'Quit Game' button in higherlower/cog.py")
+            print(f"Pressed 'Quit Game' button in higherlower/cog.py"
+                  f" from: {interaction.author.name}")
             message = "You ended the game."
             await self.update_prompt(interaction, message)
             return True
