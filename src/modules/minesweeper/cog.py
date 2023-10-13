@@ -51,9 +51,10 @@ class MinesweeperGame:
 
 
 class MinesweeperView(View):
-    def __init__(self, game=None):
+    def __init__(self, game=None, difficulty=None):  # Add difficulty parameter
         super().__init__()
         self.game = game
+        self.difficulty = difficulty  # Store it
 
         if game is None:
             self.add_item(Button(style=ButtonStyle.green, label="Easy", custom_id="easy"))
@@ -66,26 +67,57 @@ class MinesweeperView(View):
 
     async def start_game(self, interaction, mines):
         rows = cols = 5
-        game = MinesweeperGame(rows, cols, mines)  # Set the number of mines based on the chosen difficulty
-        new_view = MinesweeperView(game)
         difficulty_level = interaction.data["custom_id"]
+
+        game = MinesweeperGame(rows, cols, mines)
+        new_view = MinesweeperView(game, difficulty_level)  # Pass the difficulty here
 
         difficulty_info = f"Difficulty: {difficulty_level.capitalize()} - Number of mines: {mines}."
         await interaction.response.edit_message(content=difficulty_info, view=new_view)
+
 
     async def interaction_check(self, interaction: disnake.Interaction):
         custom_id = interaction.data["custom_id"]
 
         if custom_id in ["easy", "medium", "hard"]:
-            mines = self.difficulty_to_mines(custom_id)
-            await self.start_game(interaction, mines)
+            bombs = self.difficulty_to_mines(custom_id)
+            await self.start_game(interaction, bombs)
             return False
 
         if "cell_" in custom_id:
-            await interaction.response.defer()
+            x, y = map(int, custom_id.split("_")[1:3])  # Extract the x and y coordinates from the custom_id
+            revealed_cells = self.game.reveal(x, y)
+            self.update_board_view()  # Update the buttons
+            await self.render_board(interaction, revealed_cells)
             return False
 
         return True
+
+    def update_board_view(self):
+        for x in range(self.game.rows):
+            for y in range(self.game.cols):
+                if self.game.revealed[x][y]:
+                    if self.game.board[x][y] == 'X':
+                        self.children[x * self.game.cols + y].label = '💥'
+                        self.children[x * self.game.cols + y].style = ButtonStyle.danger
+                    elif self.game.board[x][y] == 0:
+                        self.children[x * self.game.cols + y].label = '⬛'
+                        self.children[x * self.game.cols + y].style = ButtonStyle.secondary
+                    else:
+                        self.children[x * self.game.cols + y].label = str(self.game.board[x][y])
+                        self.children[x * self.game.cols + y].style = ButtonStyle.primary
+                else:
+                    self.children[x * self.game.cols + y].label = '⬜'
+                    self.children[x * self.game.cols + y].style = ButtonStyle.secondary
+
+    async def render_board(self, interaction, revealed_cells):
+        content = f"Difficulty: {self.difficulty.capitalize()}" \
+                  f" - Number of mines: {self.difficulty_to_mines(self.difficulty)}."
+
+        if self.game.game_over:
+            content = "💥 BOOM! Game Over!\n" + content
+
+        await interaction.response.edit_message(content=content, view=self)
 
     def difficulty_to_mines(self, difficulty):
         # Mapping difficulty levels to the number of mines
