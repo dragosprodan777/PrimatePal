@@ -1,7 +1,9 @@
 from disnake.ext import commands
-from disnake.ui import View, button
+from disnake.ui import View, Button
 from disnake import ButtonStyle
+import disnake
 import random
+# Workaround with loading message
 
 
 class MinesweeperGame:
@@ -49,35 +51,45 @@ class MinesweeperGame:
 
 
 class MinesweeperView(View):
-    def __init__(self, game):
+    def __init__(self, game=None):
         super().__init__()
         self.game = game
 
-    @button(label="Easy", style=ButtonStyle.green, custom_id="easy")
-    async def on_easy_click(self, button_signature, interaction):
-        await self.start_game(interaction, 5, 5)
-        _ = button_signature
-
-    @button(label="Medium", style=ButtonStyle.blurple, custom_id="medium")
-    async def on_medium_click(self, button_signature, interaction):
-        await self.start_game(interaction, 7, 7)
-        _ = button_signature
-
-    @button(label="Hard", style=ButtonStyle.red, custom_id="hard")
-    async def on_hard_click(self, button_signature, interaction):
-        await self.start_game(interaction, 9, 9)
-        _ = button_signature
+        if game is None:
+            self.add_item(Button(style=ButtonStyle.green, label="Easy", custom_id="easy"))
+            self.add_item(Button(style=ButtonStyle.blurple, label="Medium", custom_id="medium"))
+            self.add_item(Button(style=ButtonStyle.red, label="Hard", custom_id="hard"))
+        else:
+            for x in range(game.rows):
+                for y in range(game.cols):
+                    self.add_item(Button(style=ButtonStyle.secondary, label="⬜", custom_id=f"cell_{x}_{y}"))
 
     async def start_game(self, interaction, rows, cols):
-        game = MinesweeperGame(rows, cols, int(rows*cols*0.15)) # 15% of the board are mines
-        self.game = game
+        game = MinesweeperGame(rows, cols, int(rows*cols*0.15))
+        new_view = MinesweeperView(game)
 
-        message = "Minesweeper game started!\n\n"
-        for i in range(rows):
-            for j in range(cols):
-                message += ":white_large_square:" # Placeholder for unrevealed cells
-            message += "\n"
-        await interaction.response.edit_message(content=message, view=None)
+        await interaction.response.edit_message(content="Minesweeper game started!", view=new_view)
+
+    async def interaction_check(self, interaction: disnake.Interaction):
+        custom_id = interaction.data["custom_id"]  # Fix this line
+
+        if custom_id in ["easy", "medium", "hard"]:
+            await self.start_game(interaction, *self.difficulty_to_size(custom_id))
+            return False
+            return False
+
+        if "cell_" in custom_id:
+            await interaction.response.defer()
+            return False
+
+        return True
+
+    def difficulty_to_size(self, difficulty):  # Adding the missing method
+        return {
+            "easy": (5, 5),
+            "medium": (7, 7),
+            "hard": (9, 9)
+        }[difficulty]
 
 
 class Cog(commands.Cog, name="Minesweeper"):
