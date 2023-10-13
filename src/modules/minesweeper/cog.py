@@ -64,18 +64,21 @@ class MinesweeperView(View):
                 for y in range(game.cols):
                     self.add_item(Button(style=ButtonStyle.secondary, label="⬜", custom_id=f"cell_{x}_{y}"))
 
-    async def start_game(self, interaction, rows, cols):
-        game = MinesweeperGame(rows, cols, int(rows*cols*0.15))
+    async def start_game(self, interaction, bombs):
+        rows = cols = 5
+        game = MinesweeperGame(rows, cols, bombs)  # Set the number of bombs based on the chosen difficulty
         new_view = MinesweeperView(game)
+        difficulty_level = interaction.data["custom_id"]
 
-        await interaction.response.edit_message(content="Minesweeper game started!", view=new_view)
+        difficulty_info = f"Difficulty: {difficulty_level.capitalize()} - Number of bombs: {bombs}."
+        await interaction.response.edit_message(content=difficulty_info, view=new_view)
 
     async def interaction_check(self, interaction: disnake.Interaction):
-        custom_id = interaction.data["custom_id"]  # Fix this line
+        custom_id = interaction.data["custom_id"]
 
         if custom_id in ["easy", "medium", "hard"]:
-            await self.start_game(interaction, *self.difficulty_to_size(custom_id))
-            return False
+            bombs = self.difficulty_to_bombs(custom_id)
+            await self.start_game(interaction, bombs)
             return False
 
         if "cell_" in custom_id:
@@ -84,11 +87,12 @@ class MinesweeperView(View):
 
         return True
 
-    def difficulty_to_size(self, difficulty):  # Adding the missing method
+    def difficulty_to_bombs(self, difficulty):
+        # Mapping difficulty levels to the number of bombs
         return {
-            "easy": (5, 5),
-            "medium": (7, 7),
-            "hard": (9, 9)
+            "easy": 3,
+            "medium": 4,
+            "hard": 5
         }[difficulty]
 
 
