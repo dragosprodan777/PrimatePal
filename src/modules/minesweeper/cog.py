@@ -29,6 +29,10 @@ class MinesweeperGame:
                         board[nx][ny] += 1
 
         return board
+    def check_win(self):
+        hidden_tiles = sum(row.count(False) for row in self.revealed)
+        return hidden_tiles == self.mines
+
 
     def reveal(self, x, y):
         if self.revealed[x][y] or self.game_over:
@@ -75,7 +79,6 @@ class MinesweeperView(View):
         difficulty_info = f"Difficulty: {difficulty_level.capitalize()} - Number of mines: {mines}."
         await interaction.response.edit_message(content=difficulty_info, view=new_view)
 
-
     async def interaction_check(self, interaction: disnake.Interaction):
         custom_id = interaction.data["custom_id"]
 
@@ -88,10 +91,24 @@ class MinesweeperView(View):
             x, y = map(int, custom_id.split("_")[1:3])  # Extract the x and y coordinates from the custom_id
             revealed_cells = self.game.reveal(x, y)
             self.update_board_view()  # Update the buttons
-            await self.render_board(interaction, revealed_cells)
-            return False
+
+            # Check if the game is won
+            if self.game.check_win():
+                await interaction.response.edit_message(content="🎉 Congratulations! You won!", view=None)
+                return False
+
+            # Check if it's game over (i.e., a mine was clicked)
+            elif self.game.game_over:
+                await self.render_board(interaction, revealed_cells)
+                return False
+
+            # If neither win nor game over, just update the board to reflect the latest move
+            else:
+                await self.render_board(interaction, revealed_cells)
+                return False
 
         return True
+
 
     def update_board_view(self):
         for x in range(self.game.rows):
