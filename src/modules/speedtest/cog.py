@@ -12,7 +12,7 @@ class SpeedTestCog(commands.Cog, name="SpeedTest"):
     )
     async def run_speedtest(self, ctx):
         print("Received 'speedtest' command from", ctx.author.name)
-        await ctx.send(f"Calculating your speed, {ctx.author.mention}. It will take a minute. Stay tight!")
+        await ctx.send(f"Calculating server speed, {ctx.author.mention}. It will take a minute. Stay tight!")
 
         st = speedtest.Speedtest()
         st.get_best_server()

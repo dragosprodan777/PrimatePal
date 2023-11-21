@@ -6,3 +6,5 @@ ffmpeg
 openai
 wavelink
 speedtest-cli
+sclib
+numpy
