@@ -1,11 +1,11 @@
 from disnake.ext import commands
 import os
-import openai
+from openai import OpenAI
+client = OpenAI()
+OpenAI.api_key = os.getenv('OPENAI_API_KEY')
 
-OPENAI_API_KEY = os.environ.get("OPENAI_TOKEN")
 
 # Initialize the OpenAI API client
-openai.api_key = OPENAI_API_KEY
 
 COG_COMMAND_COOLDOWN = commands.cooldown(1, 20, commands.BucketType.user)
 
@@ -22,14 +22,13 @@ class Cog(commands.Cog, name="chatgpt"):
     async def chatgpt(self, ctx, *, question):
         try:
             # Send the user's question to ChatGPT
-            response = openai.Completion.create(
-                model="text-davinci-003",  # You can choose a different engine if desired
-                prompt=question,
-                max_tokens=100,  # Adjust the response length as needed
-                n=1,
-                stop=None,
-                temperature=1
+            response = client.completions.createcompletion = client.completions.create(
+            model="gpt-3.5-turbo-instruct",
+            prompt="Say this is a test",
+            max_tokens=7,
+            temperature=0
             )
+
             print(f"Received 'chatgpt' command in gpt/cog.py: '{question}' from {ctx.author.name}")
 
         # Extract the generated response from ChatGPT

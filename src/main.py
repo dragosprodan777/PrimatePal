@@ -1,9 +1,12 @@
 import disnake
+from dotenv import load_dotenv
 import datetime
 from disnake.ext import commands
 import os
 
+load_dotenv()
 BOT_TOKEN = os.environ.get("PRIMATE_PAL_TOKEN")
+
 ONLINE_CHECK_PRIMATE_PAL_SV = 1160152031361777684
 
 bot = commands.Bot(command_prefix='!', intents=disnake.Intents.all())
